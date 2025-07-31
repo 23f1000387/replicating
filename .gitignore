@@ -1,0 +1,23 @@
+# .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment Files
+.env
+
+# IDEs
+.vscode/
+.idea/
+
+# Others
+*.log
+instance/
