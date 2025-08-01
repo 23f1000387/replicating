@@ -1,0 +1,160 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard - Parking App{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Admin Dashboard</h1>
+
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stats-card bg-primary text-white">
+            <i class="fas fa-parking"></i>
+            <h3>{{ total_spots }}</h3>
+            <p>Total Parking Spots</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card bg-success text-white">
+            <i class="fas fa-car"></i>
+            <h3>{{ available_spots }}</h3>
+            <p>Available Spots</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card bg-warning text-white">
+            <i class="fas fa-car-side"></i>
+            <h3>{{ occupied_spots }}</h3>
+            <p>Occupied Spots</p>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Parking Lots Status</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="lotStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Active Reservations</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Vehicle</th>
+                                <th>Entry Time</th>
+                                <th>Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in active_reservations %}
+                            <tr>
+                                <td>{{ reservation.user.username }}</td>
+                                <td>{{ reservation.vehicle_number }}</td>
+                                <td>{{ reservation.entry_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ reservation.spot.lot.prime_location_name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Users -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Registered Users</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Address</th>
+                        <th>PIN Code</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.address }}</td>
+                        <td>{{ user.pin_code }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Fetch parking stats
+        fetch('/api/parking-stats')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('lotStatusChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(lot => lot.name),
+                        datasets: [
+                            {
+                                label: 'Available Spots',
+                                data: data.map(lot => lot.available),
+                                backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                                borderColor: 'rgb(40, 167, 69)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Occupied Spots',
+                                data: data.map(lot => lot.occupied),
+                                backgroundColor: 'rgba(255, 193, 7, 0.5)',
+                                borderColor: 'rgb(255, 193, 7)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    });
+</script>
+{% endblock %}
