@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block title %}My Dashboard - Parking App{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">My Dashboard</h1>
+
+<!-- Active Reservations -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Active Reservations</h5>
+    </div>
+    <div class="card-body">
+        {% if active_reservations %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Vehicle Number</th>
+                        <th>Location</th>
+                        <th>Spot Number</th>
+                        <th>Entry Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in active_reservations %}
+                    <tr>
+                        <td>{{ reservation.vehicle_number }}</td>
+                        <td>{{ reservation.spot.lot.prime_location_name }}</td>
+                        <td>{{ reservation.spot.spot_number }}</td>
+                        <td>{{ reservation.entry_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('release_spot', reservation_id=reservation.id) }}"
+                                style="display: inline;">
+                                <button type="submit" class="btn btn-warning btn-sm"
+                                    onclick="return confirm('Are you sure you want to release this spot?')">
+                                    Release Spot
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No active reservations.</p>
+        <a href="{{ url_for('book_spot') }}" class="btn btn-primary">Book a Spot</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Past Reservations -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Recent Parking History</h5>
+    </div>
+    <div class="card-body">
+        {% if past_reservations %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Vehicle Number</th>
+                        <th>Location</th>
+                        <th>Entry Time</th>
+                        <th>Exit Time</th>
+                        <th>Total Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reservation in past_reservations %}
+                    <tr>
+                        <td>{{ reservation.vehicle_number }}</td>
+                        <td>{{ reservation.spot.lot.prime_location_name }}</td>
+                        <td>{{ reservation.entry_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ reservation.exit_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>${{ "%.2f"|format(reservation.total_cost) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-end">
+            <a href="{{ url_for('my_reservations') }}" class="btn btn-secondary">View All History</a>
+        </div>
+        {% else %}
+        <p class="text-muted">No parking history yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
