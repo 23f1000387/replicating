@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block title %}Welcome - Parking App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="text-center py-5">
+        <h1 class="display-4 mb-4">Welcome to Parking App</h1>
+        <p class="lead mb-4">Find and reserve parking spots at your favorite locations.</p>
+
+        {% if not current_user.is_authenticated %}
+        <div class="mb-4">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg me-2">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">Register</a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if lots %}
+    <h2 class="mb-4">Available Parking Lots</h2>
+    <div class="row">
+        {% for lot in lots %}
+        {% set available = lot.spots|selectattr('status', 'equalto', 'A')|list|length %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ lot.prime_location_name }}</h5>
+                    <p class="card-text">
+                        <strong>Address:</strong> {{ lot.address }}<br>
+                        <strong>PIN Code:</strong> {{ lot.pin_code }}<br>
+                        <strong>Price:</strong> ${{ "%.2f"|format(lot.price_per_hour) }}/hour<br>
+                        <strong>Available Spots:</strong> {{ available }} / {{ lot.max_spots }}
+                    </p>
+                    {% if current_user.is_authenticated and not current_user.is_admin %}
+                    <a href="{{ url_for('book_spot') }}" class="btn btn-primary">Book Now</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        <h4 class="alert-heading">No Parking Lots Available</h4>
+        <p class="mb-0">There are currently no parking lots in the system. Please check back later.</p>
+    </div>
+    {% endif %}
+
+    <!-- Features Section -->
+    <div class="row py-5">
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-car fa-3x mb-3 text-primary"></i>
+                <h3>Easy Booking</h3>
+                <p>Book your parking spot in just a few clicks. No more driving around looking for parking.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-clock fa-3x mb-3 text-primary"></i>
+                <h3>Flexible Hours</h3>
+                <p>Park for as long as you need. Pay only for the time you use.</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="text-center">
+                <i class="fas fa-map-marker-alt fa-3x mb-3 text-primary"></i>
+                <h3>Multiple Locations</h3>
+                <p>Choose from various parking lots across different locations.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
